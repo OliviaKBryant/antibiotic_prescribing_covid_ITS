@@ -44,6 +44,7 @@ study_data <- study_data %>%
 study_data$time_after_inter1[study_data$time_after_inter1 < 0] <- 0
 study_data$time_after_inter2[study_data$time_after_inter2 < 0] <- 0
 
+write.csv(study_data, file = "ITS_processed_dataset.csv")
 #-------------------------------------------------------------------------------
 # Negative Binomial ITS for all antibiotics per appointment
 #-------------------------------------------------------------------------------
@@ -56,7 +57,7 @@ negbinom_model1 <- glm.nb(drug ~ offset(log(outcome_measure)) + time + intervent
                           + as.factor(studymonth), 
                           data = filter(data, !is.na(intervention1)))
 
-jpeg(file=paste0("pacf_plots/pcaf_model1"))
+jpeg(file="pacf_plots/pcaf_model1")
 pacf(residuals(negbinom_model1, type = "deviance"))
 dev.off()
 
@@ -69,7 +70,7 @@ negbinom_model2 <- glm.nb(drug ~ offset(log(outcome_measure)) + time + intervent
                             + as.factor(studymonth) + negbinom_lagres, 
                             data = filter(data, !is.na(intervention1)))
 
-jpeg(file=paste0("pacf_plots/pcaf_model2"))
+jpeg(file="pacf_plots/pcaf_model2")
 pacf(residuals(negbinom_model2, type = "deviance"))
 dev.off()
 
@@ -129,7 +130,7 @@ parameter_estimates <- as.data.frame(ci.exp(negbinom_model2))
 vals_to_print <- parameter_estimates %>%
   mutate(var = rownames(parameter_estimates))
 
-write.csv(vals_to_print, file = paste0("estimates/all_antibiotics_appointments.csv"))
+write.csv(vals_to_print, file = "estimates/all_antibiotics_appointments.csv")
 
 bkg_colour <- "white"
 plot <- ggplot(study_data, aes(x = date, y = (Item_all.antibiotics/Appointments) * 100)) +
