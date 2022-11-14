@@ -44,7 +44,6 @@ study_data <- study_data %>%
 study_data$time_after_inter1[study_data$time_after_inter1 < 0] <- 0
 study_data$time_after_inter2[study_data$time_after_inter2 < 0] <- 0
 
-write.csv(study_data, file = "ITS_processed_dataset.csv")
 #-------------------------------------------------------------------------------
 # Negative Binomial ITS for all antibiotics per appointment
 #-------------------------------------------------------------------------------
@@ -57,7 +56,7 @@ negbinom_model1 <- glm.nb(drug ~ offset(log(outcome_measure)) + time + intervent
                           + as.factor(studymonth), 
                           data = filter(data, !is.na(intervention1)))
 
-jpeg(file="pacf_plots/pcaf_model1")
+jpeg(file=paste0("pacf_plots/pcaf_model1"))
 pacf(residuals(negbinom_model1, type = "deviance"))
 dev.off()
 
@@ -70,7 +69,7 @@ negbinom_model2 <- glm.nb(drug ~ offset(log(outcome_measure)) + time + intervent
                             + as.factor(studymonth) + negbinom_lagres, 
                             data = filter(data, !is.na(intervention1)))
 
-jpeg(file="pacf_plots/pcaf_model2")
+jpeg(file=paste0("pacf_plots/pcaf_model2"))
 pacf(residuals(negbinom_model2, type = "deviance"))
 dev.off()
 
@@ -130,11 +129,11 @@ parameter_estimates <- as.data.frame(ci.exp(negbinom_model2))
 vals_to_print <- parameter_estimates %>%
   mutate(var = rownames(parameter_estimates))
 
-write.csv(vals_to_print, file = "estimates/all_antibiotics_appointments.csv")
+write.csv(vals_to_print, file = paste0("estimates/all_antibiotics_appointments.csv"))
 
 bkg_colour <- "white"
-plot <- ggplot(study_data, aes(x = date, y = (Item_all.antibiotics/Appointments) * 100)) +
-  geom_line(col = "gray60") +
+plot1 <- ggplot(study_data, aes(x = date, y = (Item_all.antibiotics/Appointments) * 100)) +
+  geom_line(col = "gray50") +
   geom_line(data = outcome_plot, aes(y = predicted_vals, color = "ITS model"), size = 1) +
   geom_ribbon(data = outcome_plot, aes(ymin = lci, ymax = uci), fill = alpha(4, 0.4), lty = 0) +
   geom_line(data = filter(outcome_plot, date >= as.Date("01/03/2020", format="%d/%m/%Y")), 
@@ -165,7 +164,7 @@ plot <- ggplot(study_data, aes(x = date, y = (Item_all.antibiotics/Appointments)
 ggsave(filename = "plots/all_antibiotics_appointments",width = 8, height = 5, dpi = 150, units = "in", device='png')
 
 plot2 <- ggplot(study_data, aes(x = date, y = (Item_all.antibiotics/Appointments) * 100)) +
-  geom_line(col = "gray60") +
+  geom_line(col = "gray50") +
   geom_line(data = outcome_plot, aes(y = predicted_vals), col = 4, lty = 2) +
   geom_ribbon(data = outcome_plot, aes(ymin = lci, ymax = uci), fill = alpha(4, 0.4), lty = 0) +
   labs(y = "Items per 100 Appointments") +
@@ -192,7 +191,7 @@ plot2 <- ggplot(study_data, aes(x = date, y = (Item_all.antibiotics/Appointments
 ggsave(filename = "plots/observed_all_antibiotics_appointments",width = 8, height = 5, dpi = 150, units = "in", device='png')
 
 plot3 <- ggplot(study_data, aes(x = date, y = (Item_all.antibiotics/Appointments) * 100)) +
-  geom_line(col = "gray60") +
+  geom_line(col = "gray50") +
   geom_line(data = outcome_plot, aes(y = predicted_vals_no), col = 2, lty = 2) +
   geom_ribbon(data = outcome_plot, aes(ymin = lci_0, ymax = uci_0), fill = alpha(2, 0.4), lty = 2) +
   labs(y = "Items per 100 Appointments") +
@@ -317,10 +316,11 @@ outcome_plot <- outcome_plot %>%
 
 colours <- c("Expected trend \nbased on pre-COVID-19 \nrates" = "red3", 
              "ITS model" = "cadetblue3", 
-             "Data from OpenPrescribing" = "gray60")
+             "Data from OpenPrescribing" = "gray50")
 bkg_colour <- "white"
+
 plot <- ggplot(study_data, aes(x = date, y = (Item_all.antibiotics/Appointments) * 100)) +
-  geom_line(col = "gray60") +
+  geom_line(col = "gray50") +
   geom_line(data = outcome_plot, aes(y = predicted_vals, color = "ITS model"), size = 1) +
   geom_ribbon(data = outcome_plot, aes(ymin = lci, ymax = uci), fill = alpha(4, 0.4), lty = 0) +
   geom_line(data = filter(outcome_plot, date >= as.Date("01/03/2020", format="%d/%m/%Y")), 
@@ -358,7 +358,7 @@ plot <- ggplot(study_data, aes(x = date, y = (Item_all.antibiotics/Appointments)
 ggsave(filename = "plots/APRIL20_EXCL_appointments_all_antibiotics", width = 8, height = 5, dpi = 150, units = "in", device='png')
 
 plot2 <- ggplot(study_data, aes(x = date, y = (Item_all.antibiotics/Appointments) * 100)) +
-  geom_line(col = "gray60") +
+  geom_line(col = "gray50") +
   geom_line(data = outcome_plot, aes(y = predicted_vals), col = 4, lty = 2) +
   geom_ribbon(data = outcome_plot, aes(ymin = lci, ymax = uci), fill = alpha(4, 0.4), lty = 0) +
   labs(y = "Items per 100 Appointments") +
@@ -391,7 +391,7 @@ plot2 <- ggplot(study_data, aes(x = date, y = (Item_all.antibiotics/Appointments
 ggsave(filename = "plots/APRIL20_EXCL_observation_model",width = 8, height = 5, dpi = 150, units = "in", device='png')
 
 plot3 <- ggplot(study_data, aes(x = date, y = (Item_all.antibiotics/Appointments) * 100)) +
-  geom_line(col = "gray60") +
+  geom_line(col = "gray50") +
   geom_line(data = outcome_plot, aes(y = predicted_vals_no), col = 2, lty = 2) +
   geom_ribbon(data = outcome_plot, aes(ymin = lci_0, ymax = uci_0), fill = alpha(2, 0.4), lty = 2) +
   labs(y = "Items per 100 Appointments") +
@@ -434,27 +434,34 @@ appointments_data <- appointments_data %>%
   mutate(pc_telephone = (Telephone/total) * 100) %>%
   mutate(date = as.Date(Date, format = "%d/%m/%Y"))
 
-ggplot(appointments_data, aes(x = date, y = pc_telephone)) +
-  geom_line() +
+appointment_type_plot <- ggplot(appointments_data, aes(x = date, y = pc_telephone)) +
+  geom_line(color="gray50") +
+  theme_classic()+
   theme(axis.title = element_text(size = 12), 
         axis.title.x = element_blank(),
         axis.text.x = element_text(angle = 60, hjust = 1, size = 12),
-        legend.position = "top",
         plot.background = element_rect(fill = bkg_colour, colour =  NA),
         panel.background = element_rect(fill = bkg_colour, colour =  NA),
         legend.background = element_rect(fill = bkg_colour, colour = NA),
-        legend.text = element_text(size = 12),
-        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 10),
+        legend.title = element_blank(),
+        legend.position = "right",
         strip.text = element_text(size = 12, hjust = 0),
         strip.background = element_rect(fill = bkg_colour, colour =  NA),
         panel.grid.major = element_blank(),
-        panel.grid.minor.x = element_line(size=.2, color=rgb(0,0,0,0.2)),
+        panel.grid.minor.x = element_blank(),
         panel.grid.minor.y = element_line(size=.2, color=rgb(0,0,0,0.2)) ,
         panel.grid.major.y = element_line(size=.2, color=rgb(0,0,0,0.3))) + 
   labs(y = "% of GP Appointments via Telephone", 
-       caption ="Unknown appointment type excluded. Red lines represent the start/end of COVID-19 restrictions.",
+       caption ="Unknown appointment type excluded. Black dashed lines represent the start/end of COVID-19 restrictions.",
        title = "Proportion of GP Appointments Conducted via Telephone in England") +
   scale_x_date(date_labels = "%b %y", breaks = breaks_pretty(10),labels = scales::label_date_short()) +
-  geom_vline(xintercept = as.Date("01/03/2020", format = "%d/%m/%Y"), color="darkred", linetype = "dashed") + 
-  geom_vline(xintercept = as.Date("01/07/2021", format = "%d/%m/%Y"), color="darkred", linetype = "dashed")
+  geom_vline(xintercept = as.Date("01/03/2020", format = "%d/%m/%Y"), color="black", linetype = "dashed") + 
+  geom_vline(xintercept = as.Date("01/07/2021", format = "%d/%m/%Y"), color="black", linetype = "dashed")
 ggsave(filename = "plots/GP_appointment_type", width = 8, height = 5, dpi = 150, units = "in", device='png')
+
+
+plot1 + appointment_type_plot + plot_annotation(tag_levels = 'A')
+ggsave(filename = "plots/combined_figure.svg", width = 16, height = 7, dpi = 300, units = "in")
+
+
