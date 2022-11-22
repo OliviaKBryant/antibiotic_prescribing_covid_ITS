@@ -15,6 +15,7 @@ library(MASS)
 library(Epi)
 library(tseries)
 library(ggtext)
+library(patchwork)
 
 # load csv
 prescriptions_data <- read.csv("ITS_dataset_toJul22.csv")
@@ -465,3 +466,127 @@ plot1 + appointment_type_plot + plot_annotation(tag_levels = 'A')
 ggsave(filename = "plots/combined_figure.svg", width = 16, height = 7, dpi = 300, units = "in")
 
 
+#-------------------------------------------------------------------------------
+# Negative Binomial ITS for all antibiotics numbers
+#-------------------------------------------------------------------------------
+data = study_data
+drug = study_data$Item_all.antibiotics
+
+negbinom_model1 <- glm.nb(drug ~  time + intervention1 +
+                            time_after_inter1 + intervention2 + time_after_inter2
+                          + as.factor(studymonth), 
+                          data = filter(data, !is.na(intervention1)))
+
+jpeg(file = "pacf_plots/absolute_pacf_model1")
+pacf(residuals(negbinom_model1, type = "deviance"))
+dev.off()
+
+negbinom_lagres <- lag(residuals(negbinom_model1)) %>% as.numeric()
+res1 <- residuals(negbinom_model1, type = "deviance")
+
+# fit full model with lagged residuals 
+negbinom_model2 <- glm.nb(drug ~ time + intervention1 +
+                            time_after_inter1 + intervention2 + time_after_inter2
+                          + as.factor(studymonth) + negbinom_lagres, 
+                          data = filter(data, !is.na(intervention1)))
+
+jpeg(file = "pacf_plots/absolute_pacf_model2")
+pacf(residuals(negbinom_model2, type = "deviance"))
+dev.off()
+
+negbinom_lagres_timing <- bind_cols("time" = data$time,
+                                    "negbinom_lagres" = negbinom_lagres)
+
+outcome_pred_zeroed <- data %>%
+  left_join(negbinom_lagres_timing, by = "time") %>%
+  mutate_at("negbinom_lagres", ~(. = 0))
+
+outcome_pred_nointervention <- data %>%
+  mutate_at("intervention1", ~(. = 0)) %>%
+  mutate_at("intervention2", ~(. = 0)) %>%
+  mutate_at("time_after_inter1", ~(. = 0)) %>%
+  mutate_at("time_after_inter2", ~(. = 0))
+
+pred_noLockdown <- predict(negbinom_model2, 
+                           newdata = outcome_pred_nointervention, 
+                           se.fit = TRUE, interval="confidence") 
+
+pred_twointerruption <- predict(negbinom_model2,
+                                newdata = outcome_pred_zeroed,
+                                se.fit = TRUE, interval="confidence") 
+# save predictions from model
+preds <- pred_twointerruption$fit
+stbp_preds <- pred_twointerruption$se.fit
+
+# save predictions from model
+preds_0 <- pred_noLockdown$fit
+stbp_preds_0 <- pred_noLockdown$se.fit
+
+
+df_se <- bind_cols(stbp_preds = stbp_preds, 
+                   pred = preds,
+                   preds_0 = preds_0,
+                   stbp_preds_0 = stbp_preds_0) %>%
+  mutate(
+    #CIs
+    upp = pred + (1.96 * stbp_preds),
+    low = pred - (1.96 * stbp_preds),
+    upp_noLdn = preds_0 + (1.96 * stbp_preds_0),
+    low0_noLdn = preds_0 - (1.96 * stbp_preds_0),
+    
+    predicted_vals = exp(pred),
+    predicted_vals_no = exp(preds_0),
+    
+    # transform CIs
+    uci = exp(upp),
+    lci = exp(low),
+    uci_0 = exp(upp_noLdn),
+    lci_0 = exp(low0_noLdn)
+  )
+
+outcome_plot <- bind_cols(outcome_pred_nointervention, df_se)
+
+parameter_estimates <- as.data.frame(ci.exp(negbinom_model2))
+vals_to_print <- parameter_estimates %>%
+  mutate(var = rownames(parameter_estimates))
+
+write.csv(vals_to_print, file = "estimates/absolute_all_antibiotics_appointments.csv")
+
+outcome_plot <- outcome_plot %>%
+  add_row(date = as.Date("01/04/2020", format = "%d/%m/%Y"))
+
+colours <- c("Expected trend \nbased on pre-COVID-19 \nrates" = "red3", 
+             "ITS model" = "cadetblue3", 
+             "Data from OpenPrescribing" = "gray50")
+bkg_colour <- "white"
+
+plot <- ggplot(study_data, aes(x = date, y = Item_all.antibiotics)) +
+  geom_line(col = "gray50") +
+  geom_line(data = outcome_plot, aes(y = predicted_vals, color = "ITS model"), size = 1) +
+  geom_ribbon(data = outcome_plot, aes(ymin = lci, ymax = uci), fill = alpha(4, 0.4), lty = 0) +
+  geom_line(data = filter(outcome_plot, date >= as.Date("01/03/2020", format="%d/%m/%Y")), 
+            aes(y = predicted_vals_no, color = "Expected trend \nbased on pre-COVID-19 \nrates"), 
+            col = 2, lty = 2, size = 1) + 
+  labs(y = "Antibiotic Items Prescribed", title = "Impact of COVID-19 on Antibiotic Items Prescribed in Primary Care in England") +
+  theme_classic() +
+  theme(axis.title = element_text(size = 12), 
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(angle = 60, hjust = 1, size = 12),
+        plot.background = element_rect(fill = bkg_colour, colour =  NA),
+        panel.background = element_rect(fill = bkg_colour, colour =  NA),
+        legend.background = element_rect(fill = bkg_colour, colour = NA),
+        legend.text = element_text(size = 10),
+        legend.title = element_blank(),
+        legend.position = "right",
+        strip.text = element_text(size = 12, hjust = 0),
+        strip.background = element_rect(fill = bkg_colour, colour =  NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_line(size=.2, color=rgb(0,0,0,0.2)) ,
+        panel.grid.major.y = element_line(size=.2, color=rgb(0,0,0,0.3))) + 
+  scale_x_date(date_labels = "%b %y", breaks = breaks_pretty(10),labels = scales::label_date_short()) +
+  geom_vline(xintercept = as.Date("01/03/2020", format = "%d/%m/%Y"), linetype = "dashed") + 
+  geom_vline(xintercept = as.Date("01/07/2021", format = "%d/%m/%Y"), linetype = "dashed") +
+  scale_color_manual(values = colours)
+
+ggsave(filename = "plots/absolute_antibiotics.svg", width = 8, height = 7, dpi = 300, units = "in")

@@ -93,7 +93,7 @@
 <rect x='498.57' y='198.37' width='154.86' height='81.99' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
 <line x1='505.78' y1='224.83' x2='519.60' y2='224.83' style='stroke-width: 2.13; stroke: #CD0000; stroke-linecap: butt;' />
 <line x1='505.78' y1='248.96' x2='519.60' y2='248.96' style='stroke-width: 2.13; stroke: #7AC5CD; stroke-linecap: butt;' />
-<line x1='505.78' y1='266.24' x2='519.60' y2='266.24' style='stroke-width: 2.13; stroke: #999999; stroke-linecap: butt;' />
+<line x1='505.78' y1='266.24' x2='519.60' y2='266.24' style='stroke-width: 2.13; stroke: #7F7F7F; stroke-linecap: butt;' />
 <text x='526.81' y='217.61' style='font-size: 10.00px; font-family: "Arial";' textLength='70.02px' lengthAdjust='spacingAndGlyphs'>Expected trend </text>
 <text x='526.81' y='228.41' style='font-size: 10.00px; font-family: "Arial";' textLength='110.58px' lengthAdjust='spacingAndGlyphs'>based on pre-COVID-19 </text>
 <text x='526.81' y='239.21' style='font-size: 10.00px; font-family: "Arial";' textLength='22.23px' lengthAdjust='spacingAndGlyphs'>rates</text>
