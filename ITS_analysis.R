@@ -2,7 +2,7 @@
 # Project: ITS analysis for impact of COVID-19 on antibiotic prescribing
 # Author: Olivia Bryant
 # Date created: 26/09/2022
-# Date updated: 13/10/2022
+# Date updated: 22/11/2022
 # Notes: ITS analysis of COVID-19 on antibiotic prescriptions
 #-------------------------------------------------------------------------------
 
