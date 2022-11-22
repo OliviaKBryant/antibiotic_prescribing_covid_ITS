@@ -18,7 +18,7 @@ library(ggtext)
 library(patchwork)
 
 # load csv
-prescriptions_data <- read.csv("ITS_dataset_toJul22.csv")
+prescriptions_data <- read.csv("data/ITS_dataset_toJul22.csv")
 
 startdate = min(prescriptions_data$date)
 
@@ -428,7 +428,7 @@ ggsave(filename = "plots/APRIL20_EXCL_counterfactual", width = 8, height = 5, dp
 #-------------------------------------------------------------------------------
 # Plot type of GP appointment over time
 #-------------------------------------------------------------------------------
-appointments_data <- read.csv("GP_appointments_data.csv")
+appointments_data <- read.csv("data/GP_appointments_data.csv")
 
 appointments_data <- appointments_data %>%
   mutate(total = Telephone + Face_to_face + Home_visit + video_online) %>%
