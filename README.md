@@ -5,8 +5,9 @@ antibiotic prescribing rates in general practice in England. Outcomes were measu
 
 Analysis code is available in both R and SAS.
 
-This analysis resulted in a letter published in The Lancet Infectious Diseases on [insert date] available at [inset DOI].
-[Insert citation]
+This analysis resulted in a letter published in The Lancet Infectious Diseases online on 7 December 2022 available [here](https://doi.org/10.1016/S1473-3099(22)00814-3).
+
+Bryant, O. K., Man, K. K. C., Jani, Y. H., Wong, I. C. K., & Lau, W. C. Y. (2022). Antibiotic Prescribing in General Practice During COVID-19 and Beyond. Lancet Infectious Diseases.
 
 
 ### Data Sources
